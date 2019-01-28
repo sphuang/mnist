@@ -32,9 +32,7 @@ def load_data(number = 10000):
 # activation: 'sigmoid', 'relu'
 # loss: 'mse', 'categorical_crossentropy'
 # optimizer: SGD(lr=0.1), 'adam'
-def process(activation = 'sigmoid', loss = 'mse', optimizer = SGD(lr = 0.1)):
-	(x_train, y_train), (x_test, y_test) = load_data()
-
+def train_model(x_train, y_train, activation = 'sigmoid', loss = 'mse', optimizer = SGD(lr = 0.1)):
 	model = Sequential()
 	model.add(Dense(input_dim = image_size, units = 633, activation = activation))
 	model.add(Dense(units = 633, activation = activation))
@@ -45,10 +43,19 @@ def process(activation = 'sigmoid', loss = 'mse', optimizer = SGD(lr = 0.1)):
 
 	model.fit(x_train, y_train, batch_size = 100, epochs = 20)
 
+	return model
+
+def evaluate_model(model, x_test, y_test):
 	# return [<loss>, <accuracy>]
 	return model.evaluate(x_test, y_test)
 
-def get_params(args):
+# x_predict: [#nums_data][image_size]
+# output: [#nums_data][10]
+def predict_model(model, x_predict):
+	return model.predict(x_predict)
+
+def get_params():
+	args = sys.argv
 	args_len = len(args)
 	activation = args[1] if 2 <= args_len and 'relu' == args[1] else 'sigmoid'
 	loss = args[2] if 3 <= args_len and 'categorical_crossentropy' == args[2] else 'mse'
@@ -56,7 +63,9 @@ def get_params(args):
 	return (activation, loss, optimizer)
 
 if __name__ == "__main__":
-	args = sys.argv
-	activation, loss, optimizer = get_params(args)
-	result = process(activation, loss, optimizer)
+	activation, loss, optimizer = get_params()
+	(x_train, y_train), (x_test, y_test) = load_data()
+	model = train_model(x_train = x_train, y_train = y_train,
+						activation = activation, loss = loss, optimizer = optimizer)
+	result = evaluate_model(model, x_test, y_test)
 	print result[1]
